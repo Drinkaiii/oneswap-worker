@@ -1,5 +1,6 @@
 package com.oneswap.service;
 
+import com.oneswap.config.Network;
 import com.oneswap.util.TokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +19,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccountService {
 
-    @Value("${ALCHEMY_ETHEREUM_REST_URL}")
-    private String ALCHEMY_ETHEREUM_REST_URL;
     private final TokenUtil tokenUtil;
+    private final RestTemplate restTemplate;
+    private final Network network;
 
     public List getAccountByAddress(String userAddress){
         Map<String,Object> request = new HashMap<>();
@@ -28,8 +29,7 @@ public class AccountService {
         request.put("jsonrpc", "2.0");
         request.put("method", "alchemy_getTokenBalances");
         request.put("params", List.of(userAddress,"erc20"));
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Map> response = restTemplate.postForEntity(ALCHEMY_ETHEREUM_REST_URL, request, Map.class);
+        ResponseEntity<Map> response = restTemplate.postForEntity(network.getNetworkRestUrl(), request, Map.class);
 
         // parse response
         List tokenInDecimalList = new ArrayList();

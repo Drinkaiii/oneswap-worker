@@ -14,6 +14,7 @@ import java.math.BigInteger;
 @Builder
 public class Liquidity {
 
+    private String network;
     private String token0;
     private String token1;
     private BigInteger amount0;
