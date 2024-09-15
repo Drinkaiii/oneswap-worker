@@ -18,7 +18,7 @@ public class TokenUtil {
     @Value("${ALCHEMY_ETHEREUM_REST_URL}")
     private String ALCHEMY_ETHEREUM_REST_URL;
 
-    @Cacheable(value="token", key="#tokenAddress")
+    @Cacheable(value = "off-prefix-at-properties", key = "'token:decimals:' + #tokenAddress")
     public int getTokenDecimalsByAddress(String tokenAddress) {
         Map<String,Object> request = new HashMap<>();
         request.put("id", 1);
