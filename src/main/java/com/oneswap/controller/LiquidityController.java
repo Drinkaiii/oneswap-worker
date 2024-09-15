@@ -21,12 +21,19 @@ public class LiquidityController {
 
     @GetMapping("/estimate")
     public ResponseEntity<?> getestimate(String tokenIn, String tokenOut, BigInteger amountIn) {
+
+        // convert tokenIn and tokenOut to lower case
+        tokenIn = tokenIn.toLowerCase();
+        tokenOut = tokenOut.toLowerCase();
+        // calculate
         EstimateDto estimateDto = liquidityService.findTheBestPath(tokenIn, tokenOut, amountIn);
+        // return value
         if (estimateDto.getAmountOut() != null) {
             return ResponseEntity.ok(estimateDto);
         } else {
             return new ResponseEntity<>(ErrorResponseDto.error("no liquidity"), HttpStatus.OK);
         }
     }
+
 
 }
