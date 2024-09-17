@@ -1,5 +1,7 @@
 package com.oneswap.config;
 
+import com.oneswap.service.LiquiditySubscriber;
+import com.oneswap.service.RecordSubscriber;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +12,9 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
@@ -31,6 +36,8 @@ public class RedisConfig {
 
     @Value("${redis.ssl.enable}")
     private boolean sslEnable;
+
+    //================================= Redis Template =================================
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -63,4 +70,39 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
+
+    //================================= Redis Pub/Sub =================================
+
+    @Bean
+    public MessageListenerAdapter liquidityListenerAdapter(LiquiditySubscriber liquiditySubscriber) {
+        return new MessageListenerAdapter(liquiditySubscriber, "onMessage");
+    }
+    @Bean
+    public MessageListenerAdapter reccordListenerAdapter(RecordSubscriber recordSubscriber) {
+        return new MessageListenerAdapter(recordSubscriber, "onMessage");
+    }
+
+    @Bean
+    public RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory, MessageListenerAdapter liquidityListenerAdapter, MessageListenerAdapter reccordListenerAdapter) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        // register MessageListeners and topics
+        container.addMessageListener(liquidityListenerAdapter, liquidityTopic());
+        container.addMessageListener(reccordListenerAdapter, recordTopic());
+        return container;
+    }
+
+    // define the topics
+    @Bean
+    public ChannelTopic liquidityTopic() {
+        return new ChannelTopic("liquidityTopic");
+    }
+    @Bean
+    public ChannelTopic recordTopic() {
+        return new ChannelTopic("recordTopic");
+    }
+
+
+
+
 }
