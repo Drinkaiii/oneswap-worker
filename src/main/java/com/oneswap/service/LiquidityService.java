@@ -6,9 +6,11 @@ import com.oneswap.util.RedisUtil;
 import com.oneswap.util.TokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Log4j2
 public class LiquidityService {
+
+    @Value("${ONESWAP_FEE}")
+    private double ONESWAP_FEE;
 
     private final RedisTemplate redisTemplate;
     private final RedisUtil redisUtil;
@@ -66,6 +71,7 @@ public class LiquidityService {
                 estimateDto.setLiquidity(liquidity);
                 estimateDto.setSlippage(0.01); //todo
             }
+            System.out.println(liquidity.getExchanger() + "：" + resultAmount);
         }
         return estimateDto;
     }
@@ -92,8 +98,21 @@ public class LiquidityService {
     }
 
     private BigInteger calculateAmount(BigInteger reserveIn, BigInteger reserveOut, BigInteger amountIn) {
-        // (reserveOut * amountIn) / (reserveIn + amountIn)
-        return reserveOut.multiply(amountIn).divide(reserveIn.add(amountIn));
+
+        // Oneswap fee 0.2%
+        double feeMultiplier = (100.0 - ONESWAP_FEE) / 100.0;
+
+        // Uniswap fee 0.3%
+        BigInteger amountInAfterYourFee = new BigDecimal(amountIn).multiply(BigDecimal.valueOf(feeMultiplier)).toBigInteger();
+        BigInteger amountInWithUniswapFee = amountInAfterYourFee.multiply(BigInteger.valueOf(997));
+
+        // calculate
+        BigInteger numerator = amountInWithUniswapFee.multiply(reserveOut);
+        BigInteger denominator = reserveIn.multiply(BigInteger.valueOf(1000)).add(amountInWithUniswapFee);
+
+        // return value
+        return numerator.divide(denominator);
     }
+
 
 }
