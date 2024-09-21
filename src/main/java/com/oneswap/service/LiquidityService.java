@@ -93,7 +93,6 @@ public class LiquidityService {
                 estimateDto.setLiquidity(liquidity);
                 estimateDto.setSlippage(0.01); //todo
             }
-            System.out.println(liquidity.getExchanger() + "：" + resultAmount);
         }
         return estimateDto;
     }
