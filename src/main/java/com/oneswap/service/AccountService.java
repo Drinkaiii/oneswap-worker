@@ -1,6 +1,7 @@
 package com.oneswap.service;
 
 import com.oneswap.config.Network;
+import com.oneswap.dto.AccountDto;
 import com.oneswap.util.TokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class AccountService {
     private final RestTemplate restTemplate;
     private final Network network;
 
-    public List<Map<String, Object>> getAccountByAddress(String userAddress) {
+    public List<AccountDto> getAccountByAddress(String userAddress) {
         Map<String, Object> request = new HashMap<>();
         request.put("id", 1);
         request.put("jsonrpc", "2.0");
@@ -29,7 +30,7 @@ public class AccountService {
         ResponseEntity<Map> response = restTemplate.postForEntity(network.getNetworkRestUrl(), request, Map.class);
 
         // Parse response
-        List<Map<String, Object>> tokenInDecimalList = new ArrayList<>();
+        List<AccountDto> tokenInDecimalList = new ArrayList<>();
         List tokenList = (List) ((Map) response.getBody().get("result")).get("tokenBalances");
         for (Object token : tokenList) {
             String tokenAddress = (String) ((Map) token).get("contractAddress");
@@ -37,12 +38,12 @@ public class AccountService {
             int decimals = tokenUtil.getTokenDecimalsByAddress(tokenAddress);
 
             // Return raw balance and decimals to front-end
-            Map<String, Object> tokenInfo = new HashMap<>();
-            tokenInfo.put("tokenAddress", tokenAddress);
-            tokenInfo.put("balance", rawBalance);
-            tokenInfo.put("decimals", decimals);
-
-            tokenInDecimalList.add(tokenInfo);
+            AccountDto accountDto = AccountDto.builder()
+                    .tokenAddress(tokenAddress)
+                    .balance(rawBalance)
+                    .decimals(decimals)
+                    .build();
+            tokenInDecimalList.add(accountDto);
         }
         return tokenInDecimalList;
     }

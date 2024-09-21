@@ -1,9 +1,12 @@
 package com.oneswap.service;
 
 import com.oneswap.dto.EstimateDto;
+import com.oneswap.dto.EstimateRequest;
 import com.oneswap.model.Liquidity;
 import com.oneswap.util.RedisUtil;
+import com.oneswap.util.SessionManager;
 import com.oneswap.util.TokenUtil;
+import com.oneswap.websocket.WebsocketPushService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,9 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,27 @@ public class LiquidityService {
     private final RedisTemplate redisTemplate;
     private final RedisUtil redisUtil;
     private final TokenUtil tokenUtil;
+    private final WebsocketPushService websocketPushService;
+
+    public void updateAndSendEstimate(String tokenA, String tokenB) {
+        // get users who subscribe specific token info and get they request amountIn
+        Map<String, EstimateRequest> subscribers = SessionManager.getSubscribers(tokenA, tokenB);
+        if (subscribers.isEmpty()) {
+            // if no users subscribe the info, return
+            System.out.println("No subscribers for token pair: " + tokenA + ":" + tokenB);
+            return;
+        }
+        // according to every subscriber's amountIn to calculate amountOut
+        for (Map.Entry<String, EstimateRequest> entry : subscribers.entrySet()) {
+            String sessionId = entry.getKey();
+            EstimateRequest estimateRequest = entry.getValue();
+            BigInteger amountIn = estimateRequest.getAmountIn();
+            List<Liquidity> result = findAllPathsInDecrease(estimateRequest.getTokenIn(), estimateRequest.getTokenOut(), amountIn);
+
+            // push result to subscriber by WebSocket
+            websocketPushService.sendLiquidityUpdate(sessionId, result);
+        }
+    }
 
     public EstimateDto findTheBestPath(String firstToken, String secondToken, BigInteger amountIn) {
         // search match pool candidate
@@ -74,6 +96,59 @@ public class LiquidityService {
             System.out.println(liquidity.getExchanger() + "：" + resultAmount);
         }
         return estimateDto;
+    }
+
+    public List findAllPathsInDecrease(String tokenIn, String tokenOut, BigInteger amountIn) {
+        //List<String> tokens = tokenUtil.getTokenArray()
+        tokenIn = tokenIn.toLowerCase();
+        tokenOut = tokenOut.toLowerCase();
+        // search match pool candidate
+        List<String> keys = searchByTokens(tokenIn, tokenOut);
+        List<Liquidity> liquidities = new ArrayList<>();
+        for (String key : keys) {
+            Liquidity liquidity = redisUtil.get(key, Liquidity.class);
+            if (liquidity != null) {
+                liquidity.initializeDecimals(tokenUtil);
+                liquidities.add(liquidity);
+            }
+        }
+        // prepare a list to store multiple EstimateDto results
+        List<EstimateDto> estimateDtoList = new ArrayList<>();
+        for (Liquidity liquidity : liquidities) {
+            // process data input correctly
+            BigInteger reserveIn, reserveOut;
+            if (tokenIn.equalsIgnoreCase(liquidity.getToken0())) {
+                reserveIn = liquidity.getAmount0();
+                reserveOut = liquidity.getAmount1();
+            } else if (tokenIn.equalsIgnoreCase(liquidity.getToken1())) {
+                reserveIn = liquidity.getAmount1();
+                reserveOut = liquidity.getAmount0();
+            } else {
+                // skip mismatch pool
+                continue;
+            }
+            // calculate amountOut
+            BigInteger resultAmount = calculateAmount(reserveIn, reserveOut, amountIn);
+            // check liquidity enough
+            if (resultAmount.compareTo(reserveOut) > 0) {
+                log.warn("skip the pool: The reserve amount is greater than the reserve amount");
+                // skip the pool
+                continue;
+            }
+
+            // create and add the EstimateDto to the list
+            EstimateDto estimateDto = new EstimateDto();
+            estimateDto.setAmountOut(resultAmount);
+            estimateDto.setLiquidity(liquidity);
+            estimateDto.setSlippage(0.01); //todo: set appropriate slippage value
+            estimateDtoList.add(estimateDto);
+        }
+
+        // sort the list by resultAmount in descending order
+        estimateDtoList.sort(Comparator.comparing(EstimateDto::getAmountOut).reversed());
+
+        // return the sorted list
+        return estimateDtoList;
     }
 
     private List<String> searchByTokens(String firstToken, String secondToken) {

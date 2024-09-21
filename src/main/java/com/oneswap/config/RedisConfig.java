@@ -1,12 +1,11 @@
 package com.oneswap.config;
 
-import com.oneswap.service.LiquiditySubscriber;
-import com.oneswap.service.RecordSubscriber;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
@@ -73,36 +72,18 @@ public class RedisConfig {
 
     //================================= Redis Pub/Sub =================================
 
+    // set RedisMessageListenerContainer
     @Bean
-    public MessageListenerAdapter liquidityListenerAdapter(LiquiditySubscriber liquiditySubscriber) {
-        return new MessageListenerAdapter(liquiditySubscriber, "onMessage");
-    }
-    @Bean
-    public MessageListenerAdapter reccordListenerAdapter(RecordSubscriber recordSubscriber) {
-        return new MessageListenerAdapter(recordSubscriber, "onMessage");
-    }
-
-    @Bean
-    public RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory, MessageListenerAdapter liquidityListenerAdapter, MessageListenerAdapter reccordListenerAdapter) {
+    public RedisMessageListenerContainer redisContainer(RedisConnectionFactory connectionFactory) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        // register MessageListeners and topics
-        container.addMessageListener(liquidityListenerAdapter, liquidityTopic());
-        container.addMessageListener(reccordListenerAdapter, recordTopic());
         return container;
     }
 
-    // define the topics
+    // set MessageListenerAdapter
     @Bean
-    public ChannelTopic liquidityTopic() {
-        return new ChannelTopic("liquidityTopic");
+    public MessageListenerAdapter messageListenerAdapter(MessageListener subscriber) {
+        return new MessageListenerAdapter(subscriber, "onMessage");
     }
-    @Bean
-    public ChannelTopic recordTopic() {
-        return new ChannelTopic("recordTopic");
-    }
-
-
-
 
 }

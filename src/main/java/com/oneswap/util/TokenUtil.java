@@ -57,4 +57,35 @@ public class TokenUtil {
         }
     }
 
+    public String getTokenPair(String tokenA, String tokenB) {
+
+        String token0, token1;
+        if (tokenA.compareTo(tokenB) < 0) {
+            token0 = tokenA.toLowerCase();
+            token1 = tokenB.toLowerCase();
+        } else {
+            token0 = tokenB.toLowerCase();
+            token1 = tokenA.toLowerCase();
+        }
+
+        // combine two token address as pair
+        String pair = token0 + ":" + token1;
+        return pair;
+    }
+
+    public List<String> getTokenArray(String tokenA, String tokenB) {
+
+        String token0, token1;
+        if (tokenA.compareTo(tokenB) < 0) {
+            token0 = tokenA.toLowerCase();
+            token1 = tokenB.toLowerCase();
+        } else {
+            token0 = tokenB.toLowerCase();
+            token1 = tokenA.toLowerCase();
+        }
+
+        // combine two token address as pair
+        List result = List.of(token0, token1);
+        return result;
+    }
 }

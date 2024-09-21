@@ -57,6 +57,18 @@ public class RedisUtil {
         } catch (RedisConnectionFailureException | QueryTimeoutException e) {
             log.error("Redis connection failure");
         }
+    }
 
+    @Nullable
+    public <T> T parse(String data, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(data, clazz);
+        } catch (JsonProcessingException e) {
+            log.warn("Error processing JSON for data: " + data);
+            return null;
+        } catch (RedisConnectionFailureException | QueryTimeoutException e) {
+            log.error("Redis connection failure");
+            return null;
+        }
     }
 }
