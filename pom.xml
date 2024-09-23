@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.oneswap</groupId>
 	<artifactId>oneswap-worker</artifactId>
-	<version>0.1.2</version>
+	<version>0.1.4</version>
 	<name>oneswap-worker</name>
 	<description>OneSwap worker back-end</description>
 	<url/>
@@ -54,6 +54,17 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jdbc</artifactId>
 		</dependency>
 
 	</dependencies>

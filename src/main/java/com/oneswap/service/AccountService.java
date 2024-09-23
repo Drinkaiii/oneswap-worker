@@ -2,6 +2,14 @@ package com.oneswap.service;
 
 import com.oneswap.config.Network;
 import com.oneswap.dto.AccountDto;
+import com.oneswap.model.LimitOrder;
+import com.oneswap.model.Token;
+import com.oneswap.model.Transaction;
+import com.oneswap.model.User;
+import com.oneswap.repositiry.LimitOrderRepository;
+import com.oneswap.repositiry.TokenRepository;
+import com.oneswap.repositiry.TransactionRepository;
+import com.oneswap.repositiry.UserRepository;
 import com.oneswap.util.TokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +28,10 @@ public class AccountService {
     private final TokenUtil tokenUtil;
     private final RestTemplate restTemplate;
     private final Network network;
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
+    private final LimitOrderRepository limitOrderRepository;
 
     public List<AccountDto> getAccountByAddress(String userAddress) {
         Map<String, Object> request = new HashMap<>();
@@ -47,4 +59,38 @@ public class AccountService {
         }
         return tokenInDecimalList;
     }
+
+    public List<Transaction> getTransactionByAddress(String userAddress) {
+        User user = userRepository.findUserByAddress(userAddress);
+        if (user == null)
+            return new ArrayList<>();
+        List<Transaction> transactions = transactionRepository.findByUserId(user.getId());
+        if (transactions == null)
+            return transactions;
+        for (Transaction transaction : transactions) {
+            Token tokenIn = tokenRepository.findAddressById(transaction.getTokenInId());
+            transaction.setTokenIn(tokenIn);
+            Token tokenOut = tokenRepository.findAddressById(transaction.getTokenOutId());
+            transaction.setTokenOut(tokenOut);
+        }
+        return transactions;
+    }
+
+    public List<LimitOrder> getLimitOrderByAddress(String userAddress){
+        User user = userRepository.findUserByAddress(userAddress);
+        if (user == null)
+            return new ArrayList<>();
+        List<LimitOrder> limitOrders = limitOrderRepository.findByUserId(user.getId());
+        if (limitOrders == null)
+            return limitOrders;
+        for (LimitOrder limitOrder : limitOrders) {
+            Token tokenIn = tokenRepository.findAddressById(limitOrder.getTokenInId());
+            limitOrder.setTokenIn(tokenIn);
+            Token tokenOut = tokenRepository.findAddressById(limitOrder.getTokenOutId());
+            limitOrder.setTokenOut(tokenOut);
+        }
+        return limitOrders;
+    }
+
+
 }
