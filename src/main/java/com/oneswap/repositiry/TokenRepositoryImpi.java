@@ -24,8 +24,8 @@ public class TokenRepositoryImpi implements TokenRepository {
             Token token = new Token();
             token.setId(rs.getLong("id"));
             token.setName(rs.getString("name"));
-            token.setSymbol(rs.getString("address"));
-            token.setAddress(rs.getString("symbol"));
+            token.setSymbol(rs.getString("symbol"));
+            token.setAddress(rs.getString("address"));
             token.setDecimals(rs.getInt("decimals"));
             token.setBlockchain(rs.getString("blockchain"));
             return token;
