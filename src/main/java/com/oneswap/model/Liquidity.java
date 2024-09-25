@@ -24,6 +24,7 @@ public class Liquidity {
     private String exchanger;
     private String algorithm;
     private double weight;
+    private String poolId;
 
     public void initializeDecimals(TokenUtil tokenUtil) {
         this.decimals0 = tokenUtil.getTokenDecimalsByAddress(this.token0);
