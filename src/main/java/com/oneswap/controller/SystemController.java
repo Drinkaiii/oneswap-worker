@@ -15,5 +15,5 @@ public class SystemController {
     public ResponseEntity<?> healthCheck(){
         return new ResponseEntity("data", HttpStatus.OK);
     }
-    
+
 }
