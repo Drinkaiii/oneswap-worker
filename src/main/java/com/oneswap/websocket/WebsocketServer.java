@@ -8,6 +8,7 @@ import com.oneswap.util.SessionManager;
 import com.oneswap.util.RedisTopicManager;
 import com.oneswap.util.TokenUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -41,7 +42,6 @@ public class WebsocketServer {
     public void processEstimateMessage(EstimateRequest estimateRequest, SimpMessageHeaderAccessor headerAccessor) {
         // get the user's sessionId by SimpMessageHeaderAccessor
         String sessionId = headerAccessor.getSessionId();
-        System.out.println("Session ID: " + sessionId);
 
         // save the user's request data
         SessionManager.addSession(sessionId, estimateRequest);
@@ -64,7 +64,6 @@ public class WebsocketServer {
         String sessionId = headerAccessor.getSessionId();
         // remove the sessionId's session
         SessionManager.removeSession(sessionId);
-        System.out.println("WebSocket disconnected: " + sessionId);
     }
 
 }

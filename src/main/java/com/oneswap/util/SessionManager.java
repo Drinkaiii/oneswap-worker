@@ -1,10 +1,12 @@
 package com.oneswap.util;
 
 import com.oneswap.dto.EstimateRequest;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Log4j2
 public class SessionManager {
 
     // make sessionId as key to save every user's EstimateRequest
@@ -13,7 +15,7 @@ public class SessionManager {
     // save user's EstimateRequest
     public static void addSession(String sessionId, EstimateRequest estimateRequest) {
         sessions.put(sessionId, estimateRequest);
-        System.out.println("add sessionId: " + sessionId);
+        log.info("request sessionId: " + sessionId);
     }
 
     // get EstimateRequest by sessionId
@@ -24,7 +26,7 @@ public class SessionManager {
     // remove session by sessionId
     public static void removeSession(String sessionId) {
         sessions.remove(sessionId);
-        System.out.println("remove sessionId: " + sessionId);
+        log.info("remove sessionId: " + sessionId);
     }
 
     // get all Sessions
