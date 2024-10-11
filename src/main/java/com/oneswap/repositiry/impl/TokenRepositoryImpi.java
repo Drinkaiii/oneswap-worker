@@ -1,6 +1,7 @@
-package com.oneswap.repositiry;
+package com.oneswap.repositiry.impl;
 
 import com.oneswap.model.Token;
+import com.oneswap.repositiry.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
