@@ -13,7 +13,7 @@ OneSwap consists of front-end, back-end and smart contracts.
 ### **Local Deployment**
 
 1. Make sure that the MySQL and Redis environments exist.
-2. Pull the worker back-end image from DockerHub:
+2. Pull the Worker Back-End image from Docker Hub:
     ```
     docker pull kai410705/oneswap:latest
     ```
@@ -62,7 +62,7 @@ OneSwap consists of front-end, back-end and smart contracts.
     ```
 4. Run a container:
     ```bash
-    docker run --rm --name oneswap-core-container -p 8080:8080 -v /your/payh/application.properties:/app/application.properties -v /your/payh/application.log:/app/application.log kai410705/oneswap-core:latest
+    docker run --rm --name oneswap-core-container -p 8080:8080 -v /your/payh/application.properties:/app/application.properties -v /your/payh/application.log:/app/application.log kai410705/oneswap:latest
     ```
 5. Setup the Front-End and Core Back-End server.
     - Front-End: https://github.com/Drinkaiii/oneswap-interface
