@@ -62,7 +62,7 @@ OneSwap consists of front-end, back-end and smart contracts.
     ```
 4. Run a container:
     ```bash
-    docker run --rm --name oneswap-core-container -p 8080:8080 -v /your/payh/application.properties:/app/application.properties -v /your/payh/application.log:/app/application.log kai410705/oneswap:latest
+    docker run --rm --name oneswap-worker-container -p 8080:8080 -v /your/payh/application.properties:/app/application.properties -v /your/payh/application.log:/app/application.log kai410705/oneswap:latest
     ```
 5. Setup the Front-End and Core Back-End server.
     - Front-End: https://github.com/Drinkaiii/oneswap-interface
